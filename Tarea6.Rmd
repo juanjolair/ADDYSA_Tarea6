@@ -1,0 +1,104 @@
+# ###########################################################################################
+# ############################# Nombre: Juan José Lair Martínez #############################
+# ############################# Boleta: B150848                 #############################
+# ############################# Script:  Tarea 6                #############################
+# ############################# Elementos intermedios de R      #############################
+# ############################# Fecha de entrega: 11/01/2016    #############################
+# ###########################################################################################
+
+# Se eliminan las variables en caso de existir
+
+if( exists("PACKAGES")) {
+  rm(PACKAGES)
+}
+if( exists("package")) {
+  rm(package)
+}
+if( exists("WORKDIR")) {
+  rm(WORKDIR)
+}
+if( exists("URLDOWNLOAD")) {
+  rm(URLDOWNLOAD)
+}
+if( exists("FILES")) {
+  rm(FILES)
+}
+if( exists("FILESDOWNLOAD")) {
+  rm(FILESDOWNLOAD)
+}
+if( exists("file")) {
+  rm(file)
+}
+if( exists("files")) {
+  rm(files)
+}
+if( exists("Fatalities") ){
+    rm(Fatalities)
+}
+if( exists("data") ){
+    rm(data)
+}
+
+# PACKAGES es una lista con los nombres de los paquetes a utilizar. 
+# En caso de no existir el paquete, se descarga e instala
+
+PACKAGES<-list("R.oo", "R.utils")
+for (package in PACKAGES ) {
+  if (!require(package, character.only=T, quietly=T)) {
+      install.packages(package)
+      library(package)
+  }
+}
+
+# Se establece el directorio de trabajo, si no existe, se crea
+
+if( dir.exists("c:/AdmonDatos/Tarea6/"))
+{
+  print("El directorio ya existe")
+} else {
+  dir.create(file.path("c:/AdmonDatos/Tarea6/"), recursive=TRUE) 
+}
+
+# Se establece el directorio de trabajo y se verifica
+
+WORKDIR<-"c:/AdmonDatos/Tarea6/"
+setwd(WORKDIR)
+getwd()
+
+# Se crean las variables para descargar los archivos del sitio
+
+URLDOWNLOAD<-"http://www1.ncdc.noaa.gov/pub/data/swdi/stormevents/csvfiles/"
+
+# FILES es la lista de archivos para ser descargados.
+# En caso de que no existan los archivos, se descargan
+# FILES es la lista de archivos descargados y descomprimidos
+
+FILES<-list("StormEvents_details-ftp_v1.0_d1971_c20150826.csv","StormEvents_details-ftp_v1.0_d1972_c20150826.csv","StormEvents_details-ftp_v1.0_d1973_c20150826.csv","StormEvents_details-ftp_v1.0_d1974_c20150826.csv","StormEvents_details-ftp_v1.0_d1975_c20150826.csv","StormEvents_details-ftp_v1.0_d1976_c20150826.csv","StormEvents_details-ftp_v1.0_d1977_c20150826.csv","StormEvents_details-ftp_v1.0_d1978_c20150826.csv","StormEvents_details-ftp_v1.0_d1979_c20150826.csv","StormEvents_details-ftp_v1.0_d1980_c20150826.csv")
+
+for( file in FILES ){
+  # Se valida si el archivo descompactado ya existe en el área de datos.
+  if( ! file.exists( WORKDIR )) {
+    # Si no existe se busca el archivo compactado en el área de descarga.
+    if( ! file.exists( WORKDIR ) ){
+        downloadFile( paste(URLDOWNLOAD, paste(file, "gz", sep="."), sep = "/"), file, skip=TRUE, overwrite=TRUE ) 
+    }
+    if( file.exists( WORKDIR )){
+        gunzip( file, overwrite=TRUE, remove=TRUE )
+    }
+  }
+}
+
+# Se muestra el número de registros por cada archivo; así como la recopilación de todos
+# mostrando el total de registros por cada archivo y el total de todos ellos
+
+for( files in FILES ){
+    if( !exists("Fatalities" ) ) {
+        Fatalities<-read.csv( files, header=T, sep=",", na.strings="")
+        print(paste("Registros del archivo", paste(files, nrow(Fatalities), sep=": "), sep=" "))
+    } else {
+        data<-read.csv(files, header=T, sep=",", na.strings="")
+        print(paste("Registros del archivo", paste(files, nrow(data), sep=": "), sep=" "))
+        Fatalities<-rbind(Fatalities,data)
+    }
+}
+print(paste("Total de registros: ", nrow(Fatalities), sep = " "))
